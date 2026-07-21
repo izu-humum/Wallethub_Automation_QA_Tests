@@ -16,17 +16,19 @@ import org.openqa.selenium.WebElement;
  */
 public class FacebookHomePage extends BasePage {
 
-    /** The "What's on your mind?" entry point that opens the post composer. */
+    /** The "What's on your mind, <name>?" entry that opens the composer. */
     private static final By CREATE_POST_ENTRY =
-            By.xpath("//div[@role='button'][contains(@aria-label,'mind')]");
+            By.xpath("//span[contains(text(),'on your mind')]");
 
-    /** The rich-text editor inside the open composer dialog. */
-    private static final By STATUS_TEXTBOX =
-            By.cssSelector("div[role='dialog'] div[role='textbox']");
+    /** The rich-text (Lexical) editor inside the open composer modal. */
+    private static final By STATUS_TEXTBOX = By.cssSelector(
+            "div[role='dialog'] div[role='textbox'],"
+                    + "div[role='dialog'] div[contenteditable='true']");
 
-    /** The "Post" button inside the composer dialog. */
-    private static final By POST_BUTTON =
-            By.cssSelector("div[role='dialog'] div[aria-label='Post'][role='button']");
+    /** The "Post" button inside the composer modal (a &lt;div&gt; labelled "Post"). */
+    private static final By POST_BUTTON = By.xpath(
+            "//div[@role='dialog']//div[@role='none'][normalize-space()='Post']"
+                    + " | //div[@role='dialog']//span[normalize-space()='Post']");
 
     public FacebookHomePage(WebDriver driver) {
         super(driver);
@@ -50,9 +52,10 @@ public class FacebookHomePage extends BasePage {
         log.info("Posting status: \"{}\"", message);
         click(CREATE_POST_ENTRY);
 
-        // The composer is a contenteditable element, so type straight into it
-        // (no clear()) once the dialog is open.
+        // The composer is a contenteditable (Lexical) editor: click to focus it,
+        // then type straight in (no clear() - it starts empty).
         WebElement editor = waitForVisible(STATUS_TEXTBOX);
+        editor.click();
         editor.sendKeys(message);
 
         click(POST_BUTTON);
