@@ -63,6 +63,15 @@ public final class Configuration {
         return require("chrome.profile.directory");
     }
 
+    /**
+     * @return {@code host:port} of an already-running Chrome to attach to (started
+     *         with {@code --remote-debugging-port}), e.g. {@code 127.0.0.1:9222};
+     *         {@code null}/blank means launch a new browser instead of attaching
+     */
+    public static String chromeDebuggerAddress() {
+        return get("chrome.debugger.address");
+    }
+
     // ---- Timeouts -----------------------------------------------------------
 
     public static Duration explicitWaitTimeout() {

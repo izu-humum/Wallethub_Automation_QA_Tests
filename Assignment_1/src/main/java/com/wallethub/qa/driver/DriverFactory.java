@@ -53,6 +53,20 @@ public final class DriverFactory {
 
     private static ChromeOptions chromeOptions(boolean headless) {
         ChromeOptions options = new ChromeOptions();
+
+        String debuggerAddress = Configuration.chromeDebuggerAddress();
+        if (debuggerAddress != null && !debuggerAddress.isBlank()) {
+            // Attach to a Chrome you started with --remote-debugging-port. Selenium
+            // connects to that running browser instead of launching its own, so the
+            // test reuses that Chrome's real profile, signed-in session and tabs.
+            // Because the browser is already running, launch-time arguments
+            // (profile directory, headless, window size) do not apply here.
+            options.setExperimentalOption("debuggerAddress", debuggerAddress.trim());
+            LOG.info("Attaching to running Chrome at {} (no new browser is launched)",
+                    debuggerAddress.trim());
+            return options;
+        }
+
         options.addArguments("--start-maximized");
         options.addArguments("--disable-notifications");
         applyExistingProfile(options);

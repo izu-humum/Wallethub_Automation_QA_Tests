@@ -85,6 +85,28 @@ session, which greatly reduces CAPTCHA / bot challenges.
 - To opt out and use a clean throwaway profile: `-Dchrome.use.existing.profile=false`.
 - Applied to Chrome (the default browser).
 
+### Alternative: attach to a Chrome you launched (`debuggerAddress`)
+
+Instead of copying a profile, let the test **attach** to a Chrome you start
+yourself with a remote-debugging port. Selenium connects to that running browser
+rather than launching its own, so its real session and tabs are reused — and
+because *you* sign in by hand, the login is never treated as a bot.
+
+```bash
+# 1. Start Chrome on a debug port (dedicated profile; keep this window open):
+./scripts/launch-chrome-debug.sh            # defaults to port 9222
+
+# 2. Sign in to Facebook in that window (once).
+
+# 3. In another terminal, run the test attached to it:
+mvn test -Dchrome.debugger.address=127.0.0.1:9222
+```
+
+- A dedicated profile is used because Chrome 136+ won't expose the debug port on
+  your default profile.
+- `chrome.debugger.address` is blank by default, so a plain `mvn test` still
+  launches its own browser — attach mode is purely opt-in.
+
 ## Running
 
 From this folder (`Assignment_1/`):
