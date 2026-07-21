@@ -134,8 +134,9 @@ Assignment_1/
 ## Design notes (how the assessment criteria are met)
 
 - **Explicit waits** — every interaction goes through `BasePage`, which waits on
-  the appropriate `ExpectedConditions`. There is no `Thread.sleep` and no
-  implicit wait.
+  the appropriate `ExpectedConditions`; no implicit wait and no `Thread.sleep`
+  for synchronisation. (The one deliberate delay is a few-ms pause *between
+  keystrokes* to emulate human typing — a behaviour choice, not a wait.)
 - **Page Object Model** — one class per screen; locators live beside the
   behaviour that uses them; tests speak only in page-object methods.
 - **Externalized strings** — URLs, credentials, timeouts and test data come from

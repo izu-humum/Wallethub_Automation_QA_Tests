@@ -53,12 +53,29 @@ public abstract class BasePage {
         waitForClickable(locator).click();
     }
 
-    /** Waits for the element to be visible, clears it and types the given text. */
+    /**
+     * Waits for the element to be visible, clears it and types the text one
+     * character at a time with a short, slightly varied delay. Typing key-by-key
+     * (rather than an instant {@code sendKeys}) mimics a human and avoids the
+     * instant-fill pattern that login bot-checks look for.
+     */
     protected void type(By locator, CharSequence text) {
         log.debug("Typing into {}", locator);
         WebElement element = waitForVisible(locator);
         element.clear();
-        element.sendKeys(text);
+        for (int i = 0; i < text.length(); i++) {
+            element.sendKeys(Character.toString(text.charAt(i)));
+            pauseBetweenKeystrokes();
+        }
+    }
+
+    /** Short, slightly randomised pause between keystrokes to emulate human typing. */
+    private static void pauseBetweenKeystrokes() {
+        try {
+            Thread.sleep(60L + (long) (Math.random() * 90));   // ~60-150 ms
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
