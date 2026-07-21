@@ -71,10 +71,54 @@ public final class DriverFactory {
         // Soften the most obvious "automated browser" signals for the fresh launch.
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
+
+        String userDataDir = Configuration.chromeUserDataDir();
+        if (userDataDir != null && !userDataDir.isBlank()) {
+            // Launch against a specific profile directory - e.g. a COPY of your
+            // real profile - so the browser is already signed in and runs as a
+            // real user. Point this at a copy, NOT your live default profile:
+            // Chrome 136+ refuses to automate the default profile.
+            if (isDefaultChromeDir(userDataDir)) {
+                throw new IllegalStateException(
+                        "chrome.user.data.dir points at Chrome's default profile ('"
+                                + userDataDir + "'), which Chrome 136+ will not automate. "
+                                + "Point it at a COPY of your profile instead.");
+            }
+            options.addArguments("--user-data-dir=" + userDataDir.trim());
+            options.addArguments("--profile-directory=" + Configuration.chromeProfileDirectory());
+            LOG.info("Using Chrome profile at '{}' (profile '{}')",
+                    userDataDir.trim(), Configuration.chromeProfileDirectory());
+        }
+
         if (headless) {
             options.addArguments("--headless=new", "--window-size=1920,1080");
         }
         return options;
+    }
+
+    /** @return {@code true} if {@code dir} is Chrome's own default profile location. */
+    private static boolean isDefaultChromeDir(String dir) {
+        return normalizePath(dir).equals(normalizePath(osDefaultChromeDir()));
+    }
+
+    private static String normalizePath(String path) {
+        return path.trim().replace('\\', '/').replaceAll("/+$", "");
+    }
+
+    private static String osDefaultChromeDir() {
+        String home = System.getProperty("user.home");
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac")) {
+            return home + "/Library/Application Support/Google/Chrome";
+        }
+        if (os.contains("win")) {
+            String localAppData = System.getenv("LOCALAPPDATA");
+            String base = (localAppData != null && !localAppData.isBlank())
+                    ? localAppData
+                    : home + "\\AppData\\Local";
+            return base + "\\Google\\Chrome\\User Data";
+        }
+        return home + "/.config/google-chrome";
     }
 
     private static FirefoxOptions firefoxOptions(boolean headless) {

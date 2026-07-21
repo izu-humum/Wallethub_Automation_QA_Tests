@@ -48,6 +48,21 @@ public final class Configuration {
         return get("chrome.debugger.address");
     }
 
+    /**
+     * @return a Chrome user-data directory to launch against (e.g. a copy of your
+     *         real profile, so the browser is already signed in), or
+     *         {@code null}/blank to launch a fresh profile
+     */
+    public static String chromeUserDataDir() {
+        return get("chrome.user.data.dir");
+    }
+
+    /** @return the profile sub-directory inside the user-data dir (default {@code Default}). */
+    public static String chromeProfileDirectory() {
+        String value = get("chrome.profile.directory");
+        return (value != null && !value.isBlank()) ? value : "Default";
+    }
+
     // ---- Timeouts -----------------------------------------------------------
 
     public static Duration explicitWaitTimeout() {

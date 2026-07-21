@@ -55,23 +55,32 @@ account (or the `-D` override) rather than committing real credentials.
 ### Using your real logged-in session (avoids the bot / CAPTCHA check)
 
 By default the test launches a fresh browser, which Facebook may flag as a bot
-at login. To run against your **existing signed-in Chrome session** instead,
-attach to a Chrome you start yourself:
+at login. Two ways to run against your **existing signed-in session** instead:
+
+**Option A — run against a copy of your profile (no flags).** Quit Chrome, copy
+your profile to a temp dir once, then point `chrome.user.data.dir` at it:
 
 ```bash
-# 1. Launch Chrome on a debug port (dedicated profile; keep this window open):
-./scripts/launch-chrome-debug.sh            # port 9222 by default
+rm -rf /tmp/fb-profile && mkdir -p /tmp/fb-profile
+cp -R "$HOME/Library/Application Support/Google/Chrome/Default" /tmp/fb-profile/Default
+cp  "$HOME/Library/Application Support/Google/Chrome/Local State" /tmp/fb-profile/
+```
 
-# 2. Sign in to Facebook in that window, by hand, once.
+Set `chrome.user.data.dir=/tmp/fb-profile` in `config.properties` (or pass
+`-Dchrome.user.data.dir=/tmp/fb-profile`), then `mvn test`. The browser opens
+already signed in, so the login form is skipped and it goes straight to posting.
+Copy the `Default` profile itself, not the whole Chrome folder — and not your
+live default profile, which Chrome 136+ won't automate.
 
-# 3. Run the test attached to that browser - it reuses your session, opens a
-#    real tab there, and skips the login form since you are already signed in:
+**Option B — attach to a Chrome you launch.** Start Chrome with a debug port,
+sign in by hand, and attach to it:
+
+```bash
+./scripts/launch-chrome-debug.sh            # port 9222; sign in, keep it open
 mvn test -Dchrome.debugger.address=127.0.0.1:9222
 ```
 
-A dedicated profile is used because Chrome 136+ won't expose the debug port on
-your default profile. `chrome.debugger.address` is blank by default, so a plain
-`mvn test` still just launches its own browser.
+Both are opt-in — a plain `mvn test` still launches its own fresh browser.
 
 ## Running
 
