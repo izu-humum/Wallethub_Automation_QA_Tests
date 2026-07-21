@@ -38,40 +38,6 @@ public final class Configuration {
         return Boolean.parseBoolean(require("headless"));
     }
 
-    // ---- Chrome profile (reuse the existing signed-in session) --------------
-
-    /**
-     * @return {@code true} if Chrome should launch against the real user profile
-     *         instead of a throwaway one, so saved cookies / the signed-in
-     *         session carry over and the browser is not treated as a fresh
-     *         (incognito-like) session that tends to trigger CAPTCHAs
-     */
-    public static boolean useExistingChromeProfile() {
-        return Boolean.parseBoolean(require("chrome.use.existing.profile"));
-    }
-
-    /**
-     * @return an explicit Chrome user-data directory, or {@code null}/blank to
-     *         let {@code DriverFactory} auto-detect the OS default location
-     */
-    public static String chromeUserDataDir() {
-        return get("chrome.user.data.dir");
-    }
-
-    /** @return the profile sub-directory to use, e.g. {@code Default}. */
-    public static String chromeProfileDirectory() {
-        return require("chrome.profile.directory");
-    }
-
-    /**
-     * @return {@code host:port} of an already-running Chrome to attach to (started
-     *         with {@code --remote-debugging-port}), e.g. {@code 127.0.0.1:9222};
-     *         {@code null}/blank means launch a new browser instead of attaching
-     */
-    public static String chromeDebuggerAddress() {
-        return get("chrome.debugger.address");
-    }
-
     // ---- Timeouts -----------------------------------------------------------
 
     public static Duration explicitWaitTimeout() {
@@ -80,15 +46,6 @@ public final class Configuration {
 
     public static Duration pageLoadTimeout() {
         return Duration.ofSeconds(requireLong("page.load.timeout"));
-    }
-
-    /**
-     * @return a short timeout for probing optional / branching elements (cookie
-     *         banner, "already logged in?"), so the suite does not stall for the
-     *         full explicit-wait timeout when such an element is absent
-     */
-    public static Duration optionalWaitTimeout() {
-        return Duration.ofSeconds(requireLong("optional.wait.timeout"));
     }
 
     // ---- Application under test --------------------------------------------
