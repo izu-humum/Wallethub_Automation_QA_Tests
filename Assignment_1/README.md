@@ -57,20 +57,26 @@ account (or the `-D` override) rather than committing real credentials.
 By default the test launches a fresh browser, which Facebook may flag as a bot
 at login. Two ways to run against your **existing signed-in session** instead:
 
-**Option A — run against a copy of your profile (no flags).** Quit Chrome, copy
-your profile to a temp dir once, then point `chrome.user.data.dir` at it:
+**Option A — run against a copy of your profile (no flags).** Chrome 136+ won't
+let automation drive your live profile, so copy the profile you're signed in
+with (e.g. "Work") to a temp dir and run against the copy. Find its folder at
+`chrome://version` → **"Profile Path"** (e.g. `Profile 1` or `Default`). Quit
+Chrome, then copy that folder (example uses `Profile 1`):
 
 ```bash
 rm -rf /tmp/fb-profile && mkdir -p /tmp/fb-profile
-cp -R "$HOME/Library/Application Support/Google/Chrome/Default" /tmp/fb-profile/Default
+cp -R "$HOME/Library/Application Support/Google/Chrome/Profile 1" /tmp/fb-profile/Default
 cp  "$HOME/Library/Application Support/Google/Chrome/Local State" /tmp/fb-profile/
 ```
 
 Set `chrome.user.data.dir=/tmp/fb-profile` in `config.properties` (or pass
 `-Dchrome.user.data.dir=/tmp/fb-profile`), then `mvn test`. The browser opens
 already signed in, so the login form is skipped and it goes straight to posting.
-Copy the `Default` profile itself, not the whole Chrome folder — and not your
-live default profile, which Chrome 136+ won't automate.
+Copy the profile folder into `/tmp/fb-profile/Default` (so no other setting
+changes), not the whole Chrome folder.
+
+> Chrome cannot open a tab in your **live**, running profile — this copy is the
+> closest it allows, and it carries the same signed-in session.
 
 **Option B — attach to a Chrome you launch.** Start Chrome with a debug port,
 sign in by hand, and attach to it:
