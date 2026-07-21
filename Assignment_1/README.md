@@ -29,7 +29,8 @@ priority first):
 | --- | --- | --- |
 | `browser` | `chrome` \| `firefox` \| `edge` | `chrome` |
 | `headless` | run without a visible window | `false` |
-| `chrome.debugger.address` | attach to a Chrome you launched (see below) | _blank_ |
+| `chrome.debugger.address` | attach to a Chrome you launched (see below) | `127.0.0.1:9222` |
+| `chrome.user.data.dir` | fresh-launch profile dir (fallback; see below) | _blank_ |
 | `explicit.wait.timeout` | explicit-wait timeout (seconds) | `15` |
 | `page.load.timeout` | page-load timeout (seconds) | `30` |
 | `base.url` | application URL | `https://www.facebook.com` |
@@ -54,46 +55,39 @@ account (or the `-D` override) rather than committing real credentials.
 
 ### Using your real logged-in session (avoids the bot / CAPTCHA check)
 
-By default the test launches a fresh browser, which Facebook may flag as a bot
-at login. Two ways to run against your **existing signed-in session** instead:
+A fresh automated browser gets flagged as a bot at login. By default this
+project **attaches to a Chrome you launch and sign into yourself**, so the test
+reuses your real session — a human login is never flagged.
 
-**Option A — run against a copy of your signed-in profile (no flags).** Chrome
-136+ won't let automation drive your live Chrome, so `config.properties` already
-points at a copy (`chrome.user.data.dir=/tmp/fb-profile`). Populate that copy
-**once**, and after that plain `mvn test` reuses it.
+```bash
+# 1. Start Chrome on a debug port and sign in to Facebook (keep it open):
+./scripts/launch-chrome-debug.sh            # port 9222
 
-Quit Chrome, then copy your signed-in profile into it (find your profile folder
-at `chrome://version` → **"Profile Path"**: `Default`, `Profile 1`, …):
+# 2. Then just run — no flags:
+mvn test
+```
+
+`chrome.debugger.address` defaults to `127.0.0.1:9222`, so `mvn test` attaches to
+that Chrome, opens a tab there and — already signed in — skips login and posts.
+If nothing is listening on that port it **falls back to a fresh browser**, so a
+plain `mvn test` never breaks.
+
+> The launcher uses a dedicated profile because Chrome 136+ won't expose the
+> debug port on your normal profile (and won't let automation drive your live
+> profile at all). Sign in there once; it persists.
+
+**Alternative — copy a profile instead of attaching.** Blank
+`chrome.debugger.address`, then point `chrome.user.data.dir` at a one-time copy
+of your signed-in profile (`<PROFILE>` from `chrome://version` → "Profile Path"):
 
 ```bash
 rm -rf /tmp/fb-profile && mkdir -p /tmp/fb-profile
 cp -R "$HOME/Library/Application Support/Google/Chrome/<PROFILE>" /tmp/fb-profile/Default
 cp  "$HOME/Library/Application Support/Google/Chrome/Local State" /tmp/fb-profile/
+mvn test -Dchrome.debugger.address= -Dchrome.user.data.dir=/tmp/fb-profile
 ```
 
-Then just:
-
-```bash
-mvn test
-```
-
-The browser opens already signed in, so login is skipped and it goes straight to
-posting. That one `cp` is the only manual step — copying a browser's cookie store
-can't be scripted. Set `chrome.user.data.dir=` blank to always launch a fresh
-browser instead.
-
-> Chrome cannot open a tab in your **live**, running profile — this copy is the
-> closest it allows, and carries the same signed-in session.
-
-**Option B — attach to a Chrome you launch.** Start Chrome with a debug port,
-sign in by hand, and attach to it:
-
-```bash
-./scripts/launch-chrome-debug.sh            # port 9222; sign in, keep it open
-mvn test -Dchrome.debugger.address=127.0.0.1:9222
-```
-
-Both are opt-in — a plain `mvn test` still launches its own fresh browser.
+(The `cp` is manual — copying a browser's cookie store can't be scripted.)
 
 ## Running
 
