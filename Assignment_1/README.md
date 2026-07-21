@@ -159,8 +159,9 @@ Assignment_1/
 
 - **Explicit waits** — every interaction goes through `BasePage`, which waits on
   the appropriate `ExpectedConditions`; no implicit wait and no `Thread.sleep`
-  for synchronisation. (The one deliberate delay is a few-ms pause *between
-  keystrokes* to emulate human typing — a behaviour choice, not a wait.)
+  for synchronisation. (The only deliberate delays are a ~1s pause before each
+  click and a few-ms pause between keystrokes, to pace the run like a human —
+  behaviour choices, not synchronisation waits.)
 - **Page Object Model** — one class per screen; locators live beside the
   behaviour that uses them; tests speak only in page-object methods.
 - **Externalized strings** — URLs, credentials, timeouts and test data come from

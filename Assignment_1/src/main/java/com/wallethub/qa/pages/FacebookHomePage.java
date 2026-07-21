@@ -53,10 +53,10 @@ public class FacebookHomePage extends BasePage {
         click(CREATE_POST_ENTRY);
 
         // The composer is a contenteditable (Lexical) editor: click to focus it,
-        // then type straight in (no clear() - it starts empty).
+        // then type the message character-by-character, like the login fields.
         WebElement editor = waitForVisible(STATUS_TEXTBOX);
         editor.click();
-        editor.sendKeys(message);
+        typeLikeHuman(editor, message);
 
         click(POST_BUTTON);
 

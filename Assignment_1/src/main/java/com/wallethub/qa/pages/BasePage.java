@@ -22,6 +22,11 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class BasePage {
 
+    /** Deliberate human pace: ~1s before every click; ~60-150ms between keystrokes. */
+    private static final long CLICK_DELAY_MS = 1000;
+    private static final long KEYSTROKE_MIN_MS = 60;
+    private static final long KEYSTROKE_JITTER_MS = 90;
+
     protected final WebDriver driver;
     protected final WebDriverWait wait;
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -47,32 +52,42 @@ public abstract class BasePage {
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
-    /** Waits for the element to be clickable and clicks it. */
+    /** Waits for the element to be clickable, pauses ~1s (human pace), then clicks. */
     protected void click(By locator) {
         log.debug("Clicking {}", locator);
-        waitForClickable(locator).click();
+        WebElement element = waitForClickable(locator);
+        pause(CLICK_DELAY_MS);
+        element.click();
     }
 
     /**
-     * Waits for the element to be visible, clears it and types the text one
-     * character at a time with a short, slightly varied delay. Typing key-by-key
-     * (rather than an instant {@code sendKeys}) mimics a human and avoids the
-     * instant-fill pattern that login bot-checks look for.
+     * Waits for the element to be visible, clears it and types the text
+     * character-by-character (see {@link #typeLikeHuman}).
      */
     protected void type(By locator, CharSequence text) {
         log.debug("Typing into {}", locator);
         WebElement element = waitForVisible(locator);
         element.clear();
+        typeLikeHuman(element, text);
+    }
+
+    /**
+     * Types into an already-located element one character at a time with a short,
+     * slightly varied delay - mimicking a human and avoiding the instant-fill
+     * pattern bot-checks look for. Works for plain inputs and contenteditable
+     * editors alike (it does not clear first).
+     */
+    protected void typeLikeHuman(WebElement element, CharSequence text) {
         for (int i = 0; i < text.length(); i++) {
             element.sendKeys(Character.toString(text.charAt(i)));
-            pauseBetweenKeystrokes();
+            pause(KEYSTROKE_MIN_MS + (long) (Math.random() * KEYSTROKE_JITTER_MS));
         }
     }
 
-    /** Short, slightly randomised pause between keystrokes to emulate human typing. */
-    private static void pauseBetweenKeystrokes() {
+    /** Sleeps for {@code millis}, preserving the thread's interrupt flag. */
+    private static void pause(long millis) {
         try {
-            Thread.sleep(60L + (long) (Math.random() * 90));   // ~60-150 ms
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
