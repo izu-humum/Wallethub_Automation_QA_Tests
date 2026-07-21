@@ -54,10 +54,54 @@ public final class DriverFactory {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-notifications");
+        applyExistingProfile(options);
         if (headless) {
             options.addArguments("--headless=new", "--window-size=1920,1080");
         }
         return options;
+    }
+
+    /**
+     * Points Chrome at the user's existing profile (when enabled) so the browser
+     * keeps its saved cookies and signed-in session. A returning, logged-in
+     * session is far less likely to face a CAPTCHA than a fresh, empty one.
+     *
+     * <p>Chrome refuses to share a profile that another running instance already
+     * holds, so Chrome must be fully quit before the test starts.
+     */
+    private static void applyExistingProfile(ChromeOptions options) {
+        if (!Configuration.useExistingChromeProfile()) {
+            return;
+        }
+        String userDataDir = resolveChromeUserDataDir();
+        options.addArguments("--user-data-dir=" + userDataDir);
+        options.addArguments("--profile-directory=" + Configuration.chromeProfileDirectory());
+        LOG.info("Reusing existing Chrome profile at '{}' (profile '{}')",
+                userDataDir, Configuration.chromeProfileDirectory());
+    }
+
+    /**
+     * Resolves the Chrome user-data directory: the configured value if set,
+     * otherwise the OS-default location for the current platform.
+     */
+    private static String resolveChromeUserDataDir() {
+        String configured = Configuration.chromeUserDataDir();
+        if (configured != null && !configured.isBlank()) {
+            return configured;
+        }
+        String home = System.getProperty("user.home");
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac")) {
+            return home + "/Library/Application Support/Google/Chrome";
+        }
+        if (os.contains("win")) {
+            String localAppData = System.getenv("LOCALAPPDATA");
+            String base = (localAppData != null && !localAppData.isBlank())
+                    ? localAppData
+                    : home + "\\AppData\\Local";
+            return base + "\\Google\\Chrome\\User Data";
+        }
+        return home + "/.config/google-chrome";
     }
 
     private static FirefoxOptions firefoxOptions(boolean headless) {

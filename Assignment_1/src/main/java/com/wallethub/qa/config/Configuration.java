@@ -40,6 +40,31 @@ public final class Configuration {
         return Boolean.parseBoolean(require("headless"));
     }
 
+    // ---- Chrome profile (reuse the existing signed-in session) --------------
+
+    /**
+     * @return {@code true} if Chrome should launch against the real user profile
+     *         instead of a throwaway one, so saved cookies / the signed-in
+     *         session carry over and the browser is not treated as a fresh
+     *         (incognito-like) session that tends to trigger CAPTCHAs
+     */
+    public static boolean useExistingChromeProfile() {
+        return Boolean.parseBoolean(require("chrome.use.existing.profile"));
+    }
+
+    /**
+     * @return an explicit Chrome user-data directory, or {@code null}/blank to
+     *         let {@code DriverFactory} auto-detect the OS default location
+     */
+    public static String chromeUserDataDir() {
+        return get("chrome.user.data.dir");
+    }
+
+    /** @return the profile sub-directory to use, e.g. {@code Default}. */
+    public static String chromeProfileDirectory() {
+        return require("chrome.profile.directory");
+    }
+
     // ---- Timeouts -----------------------------------------------------------
 
     public static Duration explicitWaitTimeout() {

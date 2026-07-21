@@ -29,6 +29,9 @@ priority first):
 | --- | --- | --- |
 | `browser` | `chrome` \| `firefox` \| `edge` | `chrome` |
 | `headless` | run without a visible window | `false` |
+| `chrome.use.existing.profile` | drive your real Chrome profile (see below) | `true` |
+| `chrome.user.data.dir` | Chrome user-data dir (blank ⇒ auto-detect) | _blank_ |
+| `chrome.profile.directory` | profile sub-directory | `Default` |
 | `explicit.wait.timeout` | explicit-wait timeout (seconds) | `15` |
 | `page.load.timeout` | page-load timeout (seconds) | `30` |
 | `base.url` | application URL | `https://www.facebook.com` |
@@ -38,6 +41,23 @@ priority first):
 
 > **Never commit real credentials.** The checked-in values are placeholders;
 > pass real ones at run time as shown below.
+
+### Reusing your signed-in Chrome session (CAPTCHA avoidance)
+
+By default the tests drive your **real Chrome profile**
+(`chrome.use.existing.profile=true`) rather than the empty, temporary profile
+Selenium would otherwise create. Reusing the profile keeps your cookies and
+signed-in state, so the site sees a returning user instead of a brand-new
+(incognito-like) session — which greatly reduces CAPTCHA / bot challenges.
+
+- The user-data directory is auto-detected per OS when `chrome.user.data.dir` is
+  blank (macOS `~/Library/Application Support/Google/Chrome`, Windows
+  `%LOCALAPPDATA%\Google\Chrome\User Data`, Linux `~/.config/google-chrome`), or
+  set it explicitly. `chrome.profile.directory` selects the profile (e.g. `Default`).
+- **Quit Chrome before running** — Chrome will not share a profile that a running
+  instance already holds (`user data directory is already in use`).
+- To opt out and use a clean throwaway profile: `-Dchrome.use.existing.profile=false`.
+- Applied to Chrome (the default browser).
 
 ## Running
 
