@@ -68,13 +68,20 @@ session, which greatly reduces CAPTCHA / bot challenges.
   `~/.wallethub-selenium/chrome-profile` (created on first run); the code rejects
   the default-profile path with a clear message if you point it there.
 - **To reuse your real logged-in session** (best CAPTCHA avoidance), copy your
-  profile into the dedicated directory once, with Chrome fully closed:
+  Chrome profile into the dedicated directory once. Quit Chrome first, and be
+  signed into Facebook in Chrome beforehand:
   ```bash
-  mkdir -p ~/.wallethub-selenium
-  cp -R "$HOME/Library/Application Support/Google/Chrome" ~/.wallethub-selenium/chrome-profile
+  rm -rf ~/.wallethub-selenium/chrome-profile
+  mkdir -p ~/.wallethub-selenium/chrome-profile
+  cp -R "$HOME/Library/Application Support/Google/Chrome/Default" ~/.wallethub-selenium/chrome-profile/Default
+  cp  "$HOME/Library/Application Support/Google/Chrome/Local State" ~/.wallethub-selenium/chrome-profile/
   ```
+  (Copy the `Default` profile itself — not the whole Chrome folder, which would
+  nest as `chrome-profile/Chrome/...` and would not be found.)
 - The login step **auto-detects state**: if the profile is already signed in, it
   skips the login form and goes straight to posting; otherwise it logs in.
+- On launch the browser opens a single clean tab (saved-session restore and the
+  crash-restore bubble are disabled).
 - To opt out and use a clean throwaway profile: `-Dchrome.use.existing.profile=false`.
 - Applied to Chrome (the default browser).
 

@@ -87,6 +87,17 @@ public final class DriverFactory {
         }
         options.addArguments("--user-data-dir=" + userDataDir);
         options.addArguments("--profile-directory=" + Configuration.chromeProfileDirectory());
+        // Open a single clean tab instead of restoring the profile's saved tabs,
+        // and suppress the "restore pages?" / "Chrome didn't shut down properly"
+        // bubbles that otherwise appear when launching against a copied profile.
+        options.addArguments(
+                "--no-first-run",
+                "--no-default-browser-check",
+                "--restore-last-session=false",
+                "--disable-session-crashed-bubble",
+                "--hide-crash-restore-bubble",
+                "--disable-infobars",
+                "--disable-popup-blocking");
         LOG.info("Using persistent Chrome profile at '{}' (profile '{}')",
                 userDataDir, Configuration.chromeProfileDirectory());
     }
