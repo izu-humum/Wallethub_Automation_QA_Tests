@@ -21,3 +21,8 @@ logs/
 
 # Maven versions plugin backups
 pom.xml.versionsBackup
+
+# Local secrets / overrides - NEVER commit real credentials
+*.local.properties
+config.local.properties
+.env

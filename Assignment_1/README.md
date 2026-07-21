@@ -39,8 +39,26 @@ priority first):
 | `fb.password` | Facebook password | _placeholder_ |
 | `fb.status.message` | status text to post | `Hello World` |
 
-> **Never commit real credentials.** The checked-in values are placeholders;
-> pass real ones at run time as shown below.
+> **Never commit real credentials.** The checked-in values are placeholders, and
+> this repository is public — real credentials must stay out of git.
+
+### Providing credentials
+
+Pick whichever fits; all of them keep secrets out of version control:
+
+1. **Local file (recommended for repeat runs).** Copy the template and fill in
+   your values:
+   ```bash
+   cp src/main/resources/config.local.properties.example \
+      src/main/resources/config.local.properties
+   # then edit config.local.properties with your username/password
+   ```
+   `config.local.properties` is git-ignored and overrides `config.properties`.
+2. **Environment variables** — `export FB_USERNAME=… FB_PASSWORD=…`
+3. **JVM system properties** — `mvn test -Dfb.username=… -Dfb.password=…`
+   (note: `-D` arguments are visible in `ps`; prefer option 1 or 2 for secrets).
+
+The password is read only from these sources and is never logged.
 
 ### Reusing your signed-in Chrome session (CAPTCHA avoidance)
 
@@ -64,13 +82,16 @@ signed-in state, so the site sees a returning user instead of a brand-new
 From this folder (`Assignment_1/`):
 
 ```bash
-# Provide credentials on the command line (recommended)
-mvn test -Dfb.username="me@example.com" -Dfb.password="••••••"
+# Option A: after creating config.local.properties (see "Providing credentials")
+mvn test
 
-# …or export them as environment variables
+# Option B: environment variables
 export FB_USERNAME="me@example.com"
 export FB_PASSWORD="••••••"
 mvn test
+
+# Option C: JVM system properties
+mvn test -Dfb.username="me@example.com" -Dfb.password="••••••"
 
 # Run headless / in another browser
 mvn test -Dheadless=true -Dbrowser=firefox

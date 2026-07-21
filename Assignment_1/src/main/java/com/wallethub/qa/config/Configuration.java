@@ -14,7 +14,9 @@ import java.util.Properties;
  *   <li>JVM system property &mdash; e.g. {@code -Dfb.username=me@example.com}</li>
  *   <li>Environment variable &mdash; the key upper-cased with dots turned into
  *       underscores, e.g. {@code FB_USERNAME}</li>
- *   <li>{@code config.properties} on the class path</li>
+ *   <li>{@code config.local.properties} &mdash; an optional, git-ignored file
+ *       for real credentials and machine-specific overrides</li>
+ *   <li>{@code config.properties} on the class path (checked-in defaults)</li>
  * </ol>
  *
  * <p>This lets credentials and other data be changed at run time without
@@ -23,8 +25,9 @@ import java.util.Properties;
  */
 public final class Configuration {
 
-    private static final String RESOURCE_NAME = "config.properties";
-    private static final Properties FILE_PROPERTIES = loadFromClasspath();
+    private static final String BASE_RESOURCE = "config.properties";
+    private static final String LOCAL_RESOURCE = "config.local.properties";
+    private static final Properties FILE_PROPERTIES = loadLayeredProperties();
 
     private Configuration() {
         // Utility class - not instantiable.
@@ -121,7 +124,7 @@ public final class Configuration {
         if (value == null) {
             throw new IllegalStateException(
                     "Missing configuration for key '" + key + "'. Set it in "
-                            + RESOURCE_NAME + ", as -D" + key + "=... or via the "
+                            + BASE_RESOURCE + ", as -D" + key + "=... or via the "
                             + toEnvVariable(key) + " environment variable.");
         }
         return value;
@@ -145,17 +148,43 @@ public final class Configuration {
         return key.toUpperCase().replace('.', '_');
     }
 
-    private static Properties loadFromClasspath() {
-        Properties properties = new Properties();
+    /**
+     * Loads {@link #BASE_RESOURCE} and layers the optional, git-ignored
+     * {@link #LOCAL_RESOURCE} on top (local values win). The local file is the
+     * intended home for real credentials, so they never enter version control.
+     */
+    private static Properties loadLayeredProperties() {
+        Properties merged = new Properties();
+        merged.putAll(readResource(BASE_RESOURCE, true));
+        Properties local = readResource(LOCAL_RESOURCE, false);
+        if (local != null) {
+            merged.putAll(local);
+        }
+        return merged;
+    }
+
+    /**
+     * Reads a properties resource from the class path.
+     *
+     * @param resourceName the resource to read
+     * @param required     whether the resource being absent is an error
+     * @return the loaded properties, or {@code null} if optional and absent
+     */
+    private static Properties readResource(String resourceName, boolean required) {
         try (InputStream in = Configuration.class.getClassLoader()
-                .getResourceAsStream(RESOURCE_NAME)) {
+                .getResourceAsStream(resourceName)) {
             if (in == null) {
-                throw new IllegalStateException(RESOURCE_NAME + " was not found on the class path.");
+                if (required) {
+                    throw new IllegalStateException(
+                            resourceName + " was not found on the class path.");
+                }
+                return null;
             }
+            Properties properties = new Properties();
             properties.load(in);
             return properties;
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to read " + RESOURCE_NAME, e);
+            throw new UncheckedIOException("Failed to read " + resourceName, e);
         }
     }
 }
