@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    TestNG suite for Assignment 1.
+    Runs the Facebook "post a status" scenario. Add further <class> or <test>
+    entries here as the suite grows.
+-->
+<suite name="Assignment1-Suite" verbose="1">
+
+    <test name="Facebook-Post-Status">
+        <classes>
+            <class name="com.wallethub.qa.tests.FacebookPostStatusTest"/>
+        </classes>
+    </test>
+
+</suite>
