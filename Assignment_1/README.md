@@ -57,32 +57,30 @@ account (or the `-D` override) rather than committing real credentials.
 By default the test launches a fresh browser, which Facebook may flag as a bot
 at login. Two ways to run against your **existing signed-in session** instead:
 
-**Option A — run against a copy of any signed-in profile (no flags).** Chrome
-136+ won't let automation drive your live Chrome, so copy whichever profile
-you're signed in with to a temp dir and run against the copy. Quit Chrome first.
+**Option A — run against a copy of your signed-in profile (no flags).** Chrome
+136+ won't let automation drive your live Chrome, so `config.properties` already
+points at a copy (`chrome.user.data.dir=/tmp/fb-profile`). Populate that copy
+**once**, and after that plain `mvn test` reuses it.
 
-Either copy your whole Chrome data dir and select the profile by folder name
-(find it at `chrome://version` → **"Profile Path"**: `Default`, `Profile 1`, …):
-
-```bash
-rm -rf /tmp/chrome-copy
-cp -R "$HOME/Library/Application Support/Google/Chrome" /tmp/chrome-copy
-mvn test -Dchrome.user.data.dir=/tmp/chrome-copy -Dchrome.profile.directory="Profile 1"
-```
-
-…or copy just that one profile into `/tmp/fb-profile/Default`, so no profile
-setting is needed:
+Quit Chrome, then copy your signed-in profile into it (find your profile folder
+at `chrome://version` → **"Profile Path"**: `Default`, `Profile 1`, …):
 
 ```bash
 rm -rf /tmp/fb-profile && mkdir -p /tmp/fb-profile
 cp -R "$HOME/Library/Application Support/Google/Chrome/<PROFILE>" /tmp/fb-profile/Default
 cp  "$HOME/Library/Application Support/Google/Chrome/Local State" /tmp/fb-profile/
-mvn test -Dchrome.user.data.dir=/tmp/fb-profile
 ```
 
-Either way the browser opens already signed in, so login is skipped and it goes
-straight to posting. (Set the same values in `config.properties` to run with no
-flags.)
+Then just:
+
+```bash
+mvn test
+```
+
+The browser opens already signed in, so login is skipped and it goes straight to
+posting. That one `cp` is the only manual step — copying a browser's cookie store
+can't be scripted. Set `chrome.user.data.dir=` blank to always launch a fresh
+browser instead.
 
 > Chrome cannot open a tab in your **live**, running profile — this copy is the
 > closest it allows, and carries the same signed-in session.
