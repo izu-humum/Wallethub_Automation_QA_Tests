@@ -39,26 +39,20 @@ priority first):
 | `fb.password` | Facebook password | _placeholder_ |
 | `fb.status.message` | status text to post | `Hello World` |
 
-> **Never commit real credentials.** The checked-in values are placeholders, and
-> this repository is public — real credentials must stay out of git.
-
 ### Providing credentials
 
-Pick whichever fits; all of them keep secrets out of version control:
+**Plug and play:** set `fb.username` and `fb.password` in
+[`config.properties`](src/main/resources/config.properties), then run `mvn test`.
 
-1. **Local file (recommended for repeat runs).** Copy the template and fill in
-   your values:
-   ```bash
-   cp src/main/resources/config.local.properties.example \
-      src/main/resources/config.local.properties
-   # then edit config.local.properties with your username/password
-   ```
-   `config.local.properties` is git-ignored and overrides `config.properties`.
-2. **Environment variables** — `export FB_USERNAME=… FB_PASSWORD=…`
-3. **JVM system properties** — `mvn test -Dfb.username=… -Dfb.password=…`
-   (note: `-D` arguments are visible in `ps`; prefer option 1 or 2 for secrets).
+Prefer not to edit the file (e.g. to avoid committing secrets)? Override them at
+run time instead:
 
-The password is read only from these sources and is never logged.
+```bash
+mvn test -Dfb.username="me@example.com" -Dfb.password="secret"
+```
+
+The password is never logged. This repo is public, so use a throwaway test
+account (or the `-D` override) rather than committing real credentials.
 
 ### Reusing a signed-in Chrome session (CAPTCHA avoidance)
 
@@ -89,18 +83,13 @@ session, which greatly reduces CAPTCHA / bot challenges.
 From this folder (`Assignment_1/`):
 
 ```bash
-# Option A: after creating config.local.properties (see "Providing credentials")
+# Credentials come from config.properties (edit fb.username / fb.password)
 mvn test
 
-# Option B: environment variables
-export FB_USERNAME="me@example.com"
-export FB_PASSWORD="••••••"
-mvn test
+# ...or override them at run time instead of editing the file:
+mvn test -Dfb.username="me@example.com" -Dfb.password="secret"
 
-# Option C: JVM system properties
-mvn test -Dfb.username="me@example.com" -Dfb.password="••••••"
-
-# Run headless / in another browser
+# Run headless, or in another browser:
 mvn test -Dheadless=true -Dbrowser=firefox
 ```
 
