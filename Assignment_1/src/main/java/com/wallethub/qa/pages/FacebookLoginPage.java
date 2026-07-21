@@ -1,5 +1,6 @@
 package com.wallethub.qa.pages;
 
+import java.time.Duration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -36,17 +37,23 @@ public class FacebookLoginPage extends BasePage {
     }
 
     /**
-     * Types the credentials into the login form and submits.
+     * Types the credentials into the login form and submits. If a session is
+     * already active (e.g. when attached to a Chrome you signed into by hand),
+     * the login form is absent and this step is skipped.
      *
      * @param username Facebook email or phone
      * @param password Facebook password
-     * @return the {@link FacebookHomePage} shown after logging in
+     * @return the {@link FacebookHomePage}
      */
-    public FacebookHomePage loginAs(String username, String password) {
-        log.info("Logging in as {}", username);   // never log the password
-        type(EMAIL, username);
-        type(PASSWORD, password);
-        click(LOGIN_BUTTON);
+    public FacebookHomePage login(String username, String password) {
+        if (isVisibleWithin(EMAIL, Duration.ofSeconds(5))) {
+            log.info("Logging in as {}", username);   // never log the password
+            type(EMAIL, username);
+            type(PASSWORD, password);
+            click(LOGIN_BUTTON);
+        } else {
+            log.info("Login form not shown - already signed in, going to the feed");
+        }
         return new FacebookHomePage(driver);
     }
 }

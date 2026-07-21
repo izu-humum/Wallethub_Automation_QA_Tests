@@ -1,6 +1,7 @@
 package com.wallethub.qa.driver;
 
 import com.wallethub.qa.config.Configuration;
+import java.util.List;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -52,8 +53,24 @@ public final class DriverFactory {
 
     private static ChromeOptions chromeOptions(boolean headless) {
         ChromeOptions options = new ChromeOptions();
+
+        String debuggerAddress = Configuration.chromeDebuggerAddress();
+        if (debuggerAddress != null && !debuggerAddress.isBlank()) {
+            // Attach to a Chrome you started with --remote-debugging-port. Selenium
+            // drives that already-open browser - your real, logged-in session and
+            // tabs - instead of launching a fresh, automation-flagged one. Because
+            // the browser is already running, no other launch options apply.
+            options.setExperimentalOption("debuggerAddress", debuggerAddress.trim());
+            LOG.info("Attaching to running Chrome at {} (using your existing session)",
+                    debuggerAddress.trim());
+            return options;
+        }
+
         options.addArguments("--start-maximized");
         options.addArguments("--disable-notifications");
+        // Soften the most obvious "automated browser" signals for the fresh launch.
+        options.addArguments("--disable-blink-features=AutomationControlled");
+        options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
         if (headless) {
             options.addArguments("--headless=new", "--window-size=1920,1080");
         }

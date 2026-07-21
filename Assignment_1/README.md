@@ -29,6 +29,7 @@ priority first):
 | --- | --- | --- |
 | `browser` | `chrome` \| `firefox` \| `edge` | `chrome` |
 | `headless` | run without a visible window | `false` |
+| `chrome.debugger.address` | attach to a Chrome you launched (see below) | _blank_ |
 | `explicit.wait.timeout` | explicit-wait timeout (seconds) | `15` |
 | `page.load.timeout` | page-load timeout (seconds) | `30` |
 | `base.url` | application URL | `https://www.facebook.com` |
@@ -50,6 +51,27 @@ mvn test -Dfb.username="me@example.com" -Dfb.password="secret"
 
 The password is never logged. This repo is public, so use a throwaway test
 account (or the `-D` override) rather than committing real credentials.
+
+### Using your real logged-in session (avoids the bot / CAPTCHA check)
+
+By default the test launches a fresh browser, which Facebook may flag as a bot
+at login. To run against your **existing signed-in Chrome session** instead,
+attach to a Chrome you start yourself:
+
+```bash
+# 1. Launch Chrome on a debug port (dedicated profile; keep this window open):
+./scripts/launch-chrome-debug.sh            # port 9222 by default
+
+# 2. Sign in to Facebook in that window, by hand, once.
+
+# 3. Run the test attached to that browser - it reuses your session, opens a
+#    real tab there, and skips the login form since you are already signed in:
+mvn test -Dchrome.debugger.address=127.0.0.1:9222
+```
+
+A dedicated profile is used because Chrome 136+ won't expose the debug port on
+your default profile. `chrome.debugger.address` is blank by default, so a plain
+`mvn test` still just launches its own browser.
 
 ## Running
 

@@ -38,6 +38,16 @@ public final class Configuration {
         return Boolean.parseBoolean(require("headless"));
     }
 
+    /**
+     * @return {@code host:port} of a Chrome you started with
+     *         {@code --remote-debugging-port} for the test to attach to (reusing
+     *         your logged-in session), e.g. {@code 127.0.0.1:9222};
+     *         {@code null}/blank means launch a fresh browser instead
+     */
+    public static String chromeDebuggerAddress() {
+        return get("chrome.debugger.address");
+    }
+
     // ---- Timeouts -----------------------------------------------------------
 
     public static Duration explicitWaitTimeout() {
