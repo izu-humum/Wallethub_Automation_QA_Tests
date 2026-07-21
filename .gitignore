@@ -1,0 +1,23 @@
+# Build output
+target/
+
+# IDEs / editors
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Maven versions plugin backups
+pom.xml.versionsBackup
