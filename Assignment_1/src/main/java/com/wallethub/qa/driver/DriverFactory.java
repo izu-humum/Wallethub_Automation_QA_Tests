@@ -1,8 +1,6 @@
 package com.wallethub.qa.driver;
 
 import com.wallethub.qa.config.Configuration;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.List;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -41,7 +39,7 @@ public final class DriverFactory {
         LOG.info("Creating '{}' driver (headless={})", browser, headless);
 
         WebDriver driver = switch (browser) {
-            case "chrome" -> createChromeDriver(headless);
+            case "chrome" -> new ChromeDriver(chromeOptions(headless));
             case "firefox" -> new FirefoxDriver(firefoxOptions(headless));
             case "edge" -> new EdgeDriver(edgeOptions(headless));
             default -> throw new IllegalArgumentException(
@@ -53,57 +51,11 @@ public final class DriverFactory {
         return driver;
     }
 
-    /**
-     * Creates a Chrome driver. If {@code chrome.debugger.address} is set, first
-     * tries to attach to that already-running Chrome (reusing your signed-in
-     * session); if nothing is listening there it falls back to launching a fresh
-     * browser, so a plain run never breaks.
-     */
-    private static WebDriver createChromeDriver(boolean headless) {
-        String debuggerAddress = Configuration.chromeDebuggerAddress();
-        if (debuggerAddress != null && !debuggerAddress.isBlank()) {
-            String address = debuggerAddress.trim();
-            if (isReachable(address)) {
-                try {
-                    ChromeOptions attach = new ChromeOptions();
-                    attach.setExperimentalOption("debuggerAddress", address);
-                    WebDriver driver = new ChromeDriver(attach);
-                    LOG.info("Attached to running Chrome at {} (using your existing session)", address);
-                    return driver;
-                } catch (RuntimeException e) {
-                    LOG.warn("Attach to Chrome at {} failed ({}) - launching a fresh browser.",
-                            address, e.getMessage());
-                }
-            } else {
-                LOG.info("No Chrome is listening on {} - launching a fresh browser. To reuse your "
-                        + "signed-in session, run scripts/launch-chrome-debug.sh, sign in, then re-run.",
-                        address);
-            }
-        }
-        return new ChromeDriver(freshChromeOptions(headless));
-    }
-
-    /** Quick TCP probe so a plain run doesn't hang ~60s when no debug Chrome is up. */
-    private static boolean isReachable(String hostPort) {
-        int colon = hostPort.lastIndexOf(':');
-        if (colon < 0) {
-            return false;
-        }
-        try (Socket socket = new Socket()) {
-            String host = hostPort.substring(0, colon);
-            int port = Integer.parseInt(hostPort.substring(colon + 1));
-            socket.connect(new InetSocketAddress(host, port), 1500);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static ChromeOptions freshChromeOptions(boolean headless) {
+    private static ChromeOptions chromeOptions(boolean headless) {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-notifications");
-        // Soften the most obvious "automated browser" signals for the fresh launch.
+        // Soften the most obvious "automated browser" signals.
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
 

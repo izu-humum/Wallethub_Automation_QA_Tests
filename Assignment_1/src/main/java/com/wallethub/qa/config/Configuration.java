@@ -39,16 +39,6 @@ public final class Configuration {
     }
 
     /**
-     * @return {@code host:port} of a Chrome you started with
-     *         {@code --remote-debugging-port} for the test to attach to (reusing
-     *         your logged-in session), e.g. {@code 127.0.0.1:9222};
-     *         {@code null}/blank means launch a fresh browser instead
-     */
-    public static String chromeDebuggerAddress() {
-        return get("chrome.debugger.address");
-    }
-
-    /**
      * @return a Chrome user-data directory to launch against (e.g. a copy of your
      *         real profile, so the browser is already signed in), or
      *         {@code null}/blank to launch a fresh profile

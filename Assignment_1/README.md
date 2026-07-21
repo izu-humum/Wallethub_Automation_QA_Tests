@@ -19,18 +19,23 @@ export JAVA_HOME="/opt/homebrew/opt/openjdk@17"     # any JDK 17+ works
 git clone https://github.com/izu-humum/Wallethub_Automation_QA_Tests.git
 cd Wallethub_Automation_QA_Tests/Assignment_1
 
-# 3. Run with your Facebook credentials
-mvn test -Dfb.username="you@example.com" -Dfb.password="your-password"
+# 3. Copy your signed-in Chrome profile so the test runs as the real, logged-in
+#    you. Sign in to Facebook in Chrome, then QUIT Chrome. <PROFILE> is your
+#    profile folder from chrome://version -> "Profile Path" (e.g. Default):
+rm -rf /tmp/fb-profile && mkdir -p /tmp/fb-profile
+cp -R "$HOME/Library/Application Support/Google/Chrome/<PROFILE>" /tmp/fb-profile/Default
+cp  "$HOME/Library/Application Support/Google/Chrome/Local State" /tmp/fb-profile/
+
+# 4. Run
+mvn test -Dchrome.user.data.dir=/tmp/fb-profile
 ```
 
-A Chrome window opens, types the credentials **character-by-character** (to look
-human), logs in and posts "Hello World". Chrome + a matching driver are handled
-automatically by Selenium Manager — nothing else to install.
+Chrome opens **already signed in** (your copied session), skips the login form,
+and posts "Hello World" — no CAPTCHA, because it's your real logged-in profile.
+Chrome and a matching driver are handled automatically by Selenium Manager.
 
-Facebook may still challenge a login from a brand-new browser. To run as your
-**already-signed-in self** and avoid that, use a copy of your Chrome profile —
-see [Using your real logged-in session](#using-your-real-logged-in-session-avoids-the-bot--captcha-check)
-below.
+The one manual step is that `cp`: copying a browser profile can't be scripted
+(it's blocked as a credential-copy pattern), so you run it once yourself.
 
 ## Requirements
 
@@ -53,8 +58,8 @@ priority first):
 | --- | --- | --- |
 | `browser` | `chrome` \| `firefox` \| `edge` | `chrome` |
 | `headless` | run without a visible window | `false` |
-| `chrome.debugger.address` | attach to a Chrome you launched (see below) | `127.0.0.1:9222` |
-| `chrome.user.data.dir` | fresh-launch profile dir (fallback; see below) | _blank_ |
+| `chrome.user.data.dir` | Chrome profile dir to run against (a copy of yours) | `/tmp/fb-profile` |
+| `chrome.profile.directory` | profile sub-folder inside it | `Default` |
 | `explicit.wait.timeout` | explicit-wait timeout (seconds) | `15` |
 | `page.load.timeout` | page-load timeout (seconds) | `30` |
 | `base.url` | application URL | `https://www.facebook.com` |
@@ -77,59 +82,22 @@ mvn test -Dfb.username="me@example.com" -Dfb.password="secret"
 The password is never logged. This repo is public, so use a throwaway test
 account (or the `-D` override) rather than committing real credentials.
 
-### Using your real logged-in session (avoids the bot / CAPTCHA check)
-
-A fresh automated browser gets flagged as a bot at login. By default this
-project **attaches to a Chrome you launch and sign into yourself**, so the test
-reuses your real session — a human login is never flagged.
-
-```bash
-# 1. Start Chrome on a debug port and sign in to Facebook (keep it open):
-./scripts/launch-chrome-debug.sh            # port 9222
-
-# 2. Then just run — no flags:
-mvn test
-```
-
-`chrome.debugger.address` defaults to `127.0.0.1:9222`, so `mvn test` attaches to
-that Chrome, opens a tab there and — already signed in — skips login and posts.
-If nothing is listening on that port it **falls back to a fresh browser**, so a
-plain `mvn test` never breaks.
-
-> The launcher uses a dedicated profile because Chrome 136+ won't expose the
-> debug port on your normal profile (and won't let automation drive your live
-> profile at all). Sign in there once; it persists.
-
-**Alternative — copy a profile instead of attaching.** Blank
-`chrome.debugger.address`, then point `chrome.user.data.dir` at a one-time copy
-of your signed-in profile (`<PROFILE>` from `chrome://version` → "Profile Path"):
-
-```bash
-rm -rf /tmp/fb-profile && mkdir -p /tmp/fb-profile
-cp -R "$HOME/Library/Application Support/Google/Chrome/<PROFILE>" /tmp/fb-profile/Default
-cp  "$HOME/Library/Application Support/Google/Chrome/Local State" /tmp/fb-profile/
-mvn test -Dchrome.debugger.address= -Dchrome.user.data.dir=/tmp/fb-profile
-```
-
-(The `cp` is manual — copying a browser's cookie store can't be scripted.)
-
 ## Running
 
-From this folder (`Assignment_1/`):
+From this folder (`Assignment_1/`), after the one-time profile copy (see
+Quick start above):
 
 ```bash
-# Credentials come from config.properties (edit fb.username / fb.password)
-mvn test
+mvn test -Dchrome.user.data.dir=/tmp/fb-profile
 
-# ...or override them at run time instead of editing the file:
-mvn test -Dfb.username="me@example.com" -Dfb.password="secret"
-
-# Run headless, or in another browser:
-mvn test -Dheadless=true -Dbrowser=firefox
+# headless, or a different browser:
+mvn test -Dchrome.user.data.dir=/tmp/fb-profile -Dheadless=true
+mvn test -Dchrome.user.data.dir=/tmp/fb-profile -Dbrowser=edge
 ```
 
-The suite is defined in [`testng.xml`](testng.xml) and wired into Maven via the
-Surefire plugin.
+`chrome.user.data.dir` already has this value in `config.properties`, so a plain
+`mvn test` works too. The suite is defined in [`testng.xml`](testng.xml) and
+wired into Maven via the Surefire plugin.
 
 ## Project structure
 
