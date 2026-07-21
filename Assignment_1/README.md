@@ -8,6 +8,30 @@ A Selenium 4 + TestNG automation project that:
 The framework layer (driver management, configuration, waits, page objects) is
 implemented from scratch rather than relying on a third-party wrapper library.
 
+## Quick start (first run)
+
+```bash
+# 1. Install prerequisites (macOS + Homebrew; skip any you already have)
+brew install openjdk@17 maven
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17"     # any JDK 17+ works
+
+# 2. Get the code
+git clone https://github.com/izu-humum/Wallethub_Automation_QA_Tests.git
+cd Wallethub_Automation_QA_Tests/Assignment_1
+
+# 3. Run with your Facebook credentials
+mvn test -Dfb.username="you@example.com" -Dfb.password="your-password"
+```
+
+A Chrome window opens, types the credentials **character-by-character** (to look
+human), logs in and posts "Hello World". Chrome + a matching driver are handled
+automatically by Selenium Manager — nothing else to install.
+
+Facebook may still challenge a login from a brand-new browser. To run as your
+**already-signed-in self** and avoid that, use a copy of your Chrome profile —
+see [Using your real logged-in session](#using-your-real-logged-in-session-avoids-the-bot--captcha-check)
+below.
+
 ## Requirements
 
 - **JDK 17+**
