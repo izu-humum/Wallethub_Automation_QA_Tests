@@ -11,9 +11,15 @@ import org.openqa.selenium.WebDriver;
  */
 public class FacebookLoginPage extends BasePage {
 
-    private static final By EMAIL = By.id("email");
-    private static final By PASSWORD = By.id("pass");
-    private static final By LOGIN_BUTTON = By.name("login");
+    // Facebook's element ids are randomly generated per render (e.g.
+    // "_R_1h6kqsqppb6amH1_"), so we target the stable "name" attributes. The
+    // login control is a <div> with no name/id, so it is located by its label.
+    private static final By EMAIL = By.name("email");
+    private static final By PASSWORD = By.name("pass");
+    private static final By LOGIN_BUTTON = By.xpath(
+            "//button[@name='login']"
+                    + " | (//div[@role='none'][normalize-space()='Log in'])[1]"
+                    + " | //span[normalize-space()='Log in']");
 
     public FacebookLoginPage(WebDriver driver) {
         super(driver);
