@@ -1,6 +1,7 @@
 package com.wallethub.qa.driver;
 
 import com.wallethub.qa.config.Configuration;
+import java.io.File;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -62,33 +63,59 @@ public final class DriverFactory {
     }
 
     /**
-     * Points Chrome at the user's existing profile (when enabled) so the browser
-     * keeps its saved cookies and signed-in session. A returning, logged-in
+     * Points Chrome at a persistent profile (when enabled) so the browser keeps
+     * its cookies and signed-in session across runs. A returning, recognised
      * session is far less likely to face a CAPTCHA than a fresh, empty one.
      *
-     * <p>Chrome refuses to share a profile that another running instance already
-     * holds, so Chrome must be fully quit before the test starts.
+     * <p>A <em>dedicated</em> directory is used rather than Chrome's own default
+     * profile, because Chrome 136+ refuses to let automation drive the default
+     * profile (it hands off to any running Chrome and exits). Seed the dedicated
+     * directory with a copy of your real profile to carry over a logged-in
+     * session &mdash; see {@code config.properties}.
      */
     private static void applyExistingProfile(ChromeOptions options) {
         if (!Configuration.useExistingChromeProfile()) {
             return;
         }
         String userDataDir = resolveChromeUserDataDir();
+        if (isDefaultChromeDir(userDataDir)) {
+            throw new IllegalStateException(
+                    "chrome.user.data.dir points at Chrome's default profile ('" + userDataDir
+                            + "'), which Chrome 136+ will not automate (the browser exits on "
+                            + "launch). Leave it blank to use the dedicated profile directory, or "
+                            + "copy your profile to a separate folder and point here.");
+        }
         options.addArguments("--user-data-dir=" + userDataDir);
         options.addArguments("--profile-directory=" + Configuration.chromeProfileDirectory());
-        LOG.info("Reusing existing Chrome profile at '{}' (profile '{}')",
+        LOG.info("Using persistent Chrome profile at '{}' (profile '{}')",
                 userDataDir, Configuration.chromeProfileDirectory());
     }
 
     /**
      * Resolves the Chrome user-data directory: the configured value if set,
-     * otherwise the OS-default location for the current platform.
+     * otherwise a dedicated, non-default automation profile under the home
+     * directory (created by Chrome on first use).
      */
     private static String resolveChromeUserDataDir() {
         String configured = Configuration.chromeUserDataDir();
         if (configured != null && !configured.isBlank()) {
             return configured;
         }
+        return System.getProperty("user.home")
+                + File.separator + ".wallethub-selenium"
+                + File.separator + "chrome-profile";
+    }
+
+    /** @return {@code true} if {@code dir} is Chrome's own default profile location. */
+    private static boolean isDefaultChromeDir(String dir) {
+        return normalize(dir).equals(normalize(osDefaultChromeDir()));
+    }
+
+    private static String normalize(String path) {
+        return path.replace('\\', '/').replaceAll("/+$", "");
+    }
+
+    private static String osDefaultChromeDir() {
         String home = System.getProperty("user.home");
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("mac")) {

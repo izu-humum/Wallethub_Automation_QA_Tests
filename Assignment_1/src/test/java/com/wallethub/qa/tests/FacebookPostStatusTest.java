@@ -23,10 +23,10 @@ public class FacebookPostStatusTest extends BaseTest {
         String password = Configuration.facebookPassword();
         String statusMessage = Configuration.statusMessage();
 
-        // 1. Log in.
+        // 1. Log in (skipped automatically if the reused profile is already signed in).
         FacebookHomePage home = new FacebookLoginPage(driver())
                 .open(Configuration.baseUrl())
-                .loginAs(username, password);
+                .login(username, password);
 
         Assert.assertTrue(home.isLoaded(),
                 "Login appears to have failed - the news feed did not load. "

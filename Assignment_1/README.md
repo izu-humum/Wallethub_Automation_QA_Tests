@@ -60,20 +60,27 @@ Pick whichever fits; all of them keep secrets out of version control:
 
 The password is read only from these sources and is never logged.
 
-### Reusing your signed-in Chrome session (CAPTCHA avoidance)
+### Reusing a signed-in Chrome session (CAPTCHA avoidance)
 
-By default the tests drive your **real Chrome profile**
+By default the tests drive a **persistent Chrome profile**
 (`chrome.use.existing.profile=true`) rather than the empty, temporary profile
-Selenium would otherwise create. Reusing the profile keeps your cookies and
-signed-in state, so the site sees a returning user instead of a brand-new
-(incognito-like) session — which greatly reduces CAPTCHA / bot challenges.
+Selenium would otherwise create. A profile that carries cookies and a signed-in
+state looks like a returning user rather than a brand-new (incognito-like)
+session, which greatly reduces CAPTCHA / bot challenges.
 
-- The user-data directory is auto-detected per OS when `chrome.user.data.dir` is
-  blank (macOS `~/Library/Application Support/Google/Chrome`, Windows
-  `%LOCALAPPDATA%\Google\Chrome\User Data`, Linux `~/.config/google-chrome`), or
-  set it explicitly. `chrome.profile.directory` selects the profile (e.g. `Default`).
-- **Quit Chrome before running** — Chrome will not share a profile that a running
-  instance already holds (`user data directory is already in use`).
+- **Chrome 136+ will not automate your *default* profile** — the browser exits on
+  launch (`session not created: Chrome instance exited`). So a **dedicated**
+  directory is used instead. `chrome.user.data.dir` blank ⇒
+  `~/.wallethub-selenium/chrome-profile` (created on first run); the code rejects
+  the default-profile path with a clear message if you point it there.
+- **To reuse your real logged-in session** (best CAPTCHA avoidance), copy your
+  profile into the dedicated directory once, with Chrome fully closed:
+  ```bash
+  mkdir -p ~/.wallethub-selenium
+  cp -R "$HOME/Library/Application Support/Google/Chrome" ~/.wallethub-selenium/chrome-profile
+  ```
+- The login step **auto-detects state**: if the profile is already signed in, it
+  skips the login form and goes straight to posting; otherwise it logs in.
 - To opt out and use a clean throwaway profile: `-Dchrome.use.existing.profile=false`.
 - Applied to Chrome (the default browser).
 

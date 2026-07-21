@@ -78,6 +78,15 @@ public final class Configuration {
         return Duration.ofSeconds(requireLong("page.load.timeout"));
     }
 
+    /**
+     * @return a short timeout for probing optional / branching elements (cookie
+     *         banner, "already logged in?"), so the suite does not stall for the
+     *         full explicit-wait timeout when such an element is absent
+     */
+    public static Duration optionalWaitTimeout() {
+        return Duration.ofSeconds(requireLong("optional.wait.timeout"));
+    }
+
     // ---- Application under test --------------------------------------------
 
     public static String baseUrl() {

@@ -1,6 +1,7 @@
 package com.wallethub.qa.pages;
 
 import com.wallethub.qa.config.Configuration;
+import java.time.Duration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -67,6 +68,23 @@ public abstract class BasePage {
     protected boolean isVisible(By locator) {
         try {
             return waitForVisible(locator).isDisplayed();
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Like {@link #isVisible(By)} but with a caller-supplied timeout. Use for
+     * optional or branching elements (e.g. a cookie banner) so the suite does
+     * not wait the full explicit-wait timeout when the element is absent.
+     *
+     * @return {@code true} if visible within {@code timeout}, else {@code false}
+     */
+    protected boolean isVisibleWithin(By locator, Duration timeout) {
+        try {
+            new WebDriverWait(driver, timeout)
+                    .until(ExpectedConditions.visibilityOfElementLocated(locator));
+            return true;
         } catch (TimeoutException e) {
             return false;
         }
