@@ -102,21 +102,3 @@ Assignment_2/
         ├── base/      BaseTest                 — driver setup / teardown
         └── tests/     WalletHubReviewTest      — the end-to-end flow
 ```
-
-## Design notes (assessment criteria)
-
-- **Explicit waits** — all interactions go through `BasePage`/`ExpectedConditions`;
-  no `Thread.sleep` for synchronisation. (Deliberate human-pacing only: ~1s before
-  each click, key-by-key typing.)
-- **Page Object Model** — one class per screen/dialog; locators live beside their
-  behaviour; the test reads as plain steps.
-- **Externalized strings** — target URLs, star, policy, review length, timeouts all
-  in `config.properties` with `-D`/env overrides.
-- **Test setup** — `BaseTest` creates/quits a driver per test; suite in `testng.xml`.
-- **Separation of concerns / code reuse / framework** — config, driver, pages, util
-  and tests are separate layers, shared via `BasePage` & friends (same framework as
-  Assignment 1, no wrapper libs).
-- **Logging** — SLF4J + Logback throughout.
-
-WalletHub's markup is Angular-generated and can change; the locators are isolated
-in the page objects so a maintainer can adjust them in one place.

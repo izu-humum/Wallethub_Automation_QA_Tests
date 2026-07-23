@@ -120,22 +120,3 @@ Assignment_1/
             ├── base/           BaseTest          — driver setup / teardown
             └── tests/          FacebookPostStatusTest
 ```
-
-## Design notes (how the assessment criteria are met)
-
-- **Explicit waits** — every interaction goes through `BasePage`, which waits on
-  the appropriate `ExpectedConditions`; no implicit wait and no `Thread.sleep`
-  for synchronisation. (The only deliberate delays are a ~1s pause before each
-  click and a few-ms pause between keystrokes, to pace the run like a human —
-  behaviour choices, not synchronisation waits.)
-- **Page Object Model** — one class per screen; locators live beside the
-  behaviour that uses them; tests speak only in page-object methods.
-- **Externalized strings** — URLs, credentials, timeouts and test data come from
-  `config.properties` with system-property / environment-variable overrides.
-- **Test setup** — `BaseTest` creates a fresh driver per test and quits it
-  afterwards; the suite is declared in `testng.xml`.
-- **Separation of concerns** — configuration, driver lifecycle, pages and tests
-  are in distinct packages/layers.
-- **Code reuse** — `BasePage`, `DriverFactory`, `DriverManager` and
-  `Configuration` are shared building blocks.
-- **Logging** — SLF4J + Logback; the password is never logged.
