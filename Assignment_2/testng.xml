@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    TestNG suite for Assignment 2.
+    Runs the WalletHub "rate and review" scenario.
+-->
+<suite name="Assignment2-Suite" verbose="1">
+
+    <test name="WalletHub-Submit-Review">
+        <classes>
+            <class name="com.wallethub.qa.tests.WalletHubReviewTest"/>
+        </classes>
+    </test>
+
+</suite>
