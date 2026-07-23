@@ -72,15 +72,13 @@ priority first):
 **Plug and play:** set `fb.username` and `fb.password` in
 [`config.properties`](src/main/resources/config.properties), then run `mvn test`.
 
-Prefer not to edit the file (e.g. to avoid committing secrets)? Override them at
-run time instead:
+Prefer not to edit the file? Override them at run time instead:
 
 ```bash
 mvn test -Dfb.username="me@example.com" -Dfb.password="secret"
 ```
 
-The password is never logged. This repo is public, so use a throwaway test
-account (or the `-D` override) rather than committing real credentials.
+The password is never logged.
 
 ## Running
 
@@ -141,11 +139,3 @@ Assignment_1/
 - **Code reuse** — `BasePage`, `DriverFactory`, `DriverManager` and
   `Configuration` are shared building blocks.
 - **Logging** — SLF4J + Logback; the password is never logged.
-
-## Notes on automating Facebook
-
-Facebook actively resists automation. A real run may hit a login checkpoint,
-two-factor prompt, or "suspicious login" review, and the composer markup is
-obfuscated and localized. The composer locators in `FacebookHomePage` target the
-English UI's ARIA roles/labels and are the most likely thing to need updating —
-they are deliberately isolated so a maintainer can adjust them in one place.
